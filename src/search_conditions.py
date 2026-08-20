@@ -1,12 +1,35 @@
+"""
+探索処理
+
+入力:
+- scores
+- deposit
+- counters
+- score_tables
+
+探索前:
+- before_ranking
+- before_places
+- top_score
+- score_diff
+
+探索後:
+- after_ranking
+- after_places
+
+出力:
+- results
+"""
+
 from csv_loader import load_score_tables
 from ranking import get_ranking, get_places
 from score import apply_ron, apply_dealer_tsumo, apply_non_dealer_tsumo
 
 scores = {
-    "東": 25000,
-    "南": 25000,
-    "西": 25000,
-    "北": 25000,
+    "東": 10000,
+    "南": 15000,
+    "西": 35000,
+    "北": 40000,
 }
 
 score_tables = load_score_tables()
@@ -16,7 +39,18 @@ non_dealer_ron = score_tables["non_dealer_ron"]
 dealer_tsumo = score_tables["dealer_tsumo"]
 dealer_ron = score_tables["dealer_ron"]
 
-before_places = get_places(get_ranking(scores))
+before_ranking = get_ranking(scores)
+before_places = get_places(before_ranking)
+
+top_score = max(scores.values())
+top_player = before_places[0][1]
+
+score_diff = {player: top_score - score for player, score in scores.items()}
+
+print(before_ranking)
+print(before_places)
+print(top_score)
+print(score_diff)
 
 for _, row in non_dealer_tsumo.iterrows():
 
@@ -30,29 +64,26 @@ for _, row in non_dealer_tsumo.iterrows():
         deposit=0,
     )
 
-    ranking = get_ranking(new_scores)
-    places = get_places(ranking)
-
     after_places = get_places(get_ranking(new_scores))
 
     print(after_places)
-    print(places)
 
 print("--------------------------------------------------")
 
 for _, row in non_dealer_ron.iterrows():
 
     new_scores = apply_ron(
-        scores, winner="南", discarder="西", point=row["point"], counters=0, deposit=0
+        scores,
+        winner="南",
+        discarder=top_player,
+        point=row["point"],
+        counters=0,
+        deposit=0,
     )
-
-    ranking = get_ranking(new_scores)
-    places = get_places(ranking)
 
     after_places = get_places(get_ranking(new_scores))
 
     print(after_places)
-    print(places)
 
 print("--------------------------------------------------")
 
@@ -62,26 +93,23 @@ for _, row in dealer_tsumo.iterrows():
         scores, winner="東", pay=row["pay"], counters=0, deposit=0
     )
 
-    ranking = get_ranking(new_scores)
-    places = get_places(ranking)
-
     after_places = get_places(get_ranking(new_scores))
 
     print(after_places)
-    print(places)
 
 print("--------------------------------------------------")
 
 for _, row in dealer_ron.iterrows():
 
     new_scores = apply_ron(
-        scores, winner="東", discarder="南", point=row["point"], counters=0, deposit=0
+        scores,
+        winner="東",
+        discarder=top_player,
+        point=row["point"],
+        counters=0,
+        deposit=0,
     )
-
-    ranking = get_ranking(new_scores)
-    places = get_places(ranking)
 
     after_places = get_places(get_ranking(new_scores))
 
     print(after_places)
-    print(places)
