@@ -3,14 +3,15 @@
 
 入力:
 - scores
-- deposit
-- counters
 - score_tables
+- counters=0
+- deposit=0
 
 探索前:
 - before_ranking
 - before_places
 - top_score
+- top_player
 - score_diff
 
 探索後:
@@ -20,53 +21,27 @@
 - results
 """
 
-from csv_loader import load_score_tables
 from ranking import get_ranking, get_places
 from score import apply_ron, apply_dealer_tsumo, apply_non_dealer_tsumo
 
-scores = {
-    "東": 10000,
-    "南": 15000,
-    "西": 35000,
-    "北": 40000,
-}
 
-score_tables = load_score_tables()
-
-non_dealer_tsumo = score_tables["non_dealer_tsumo"]
-non_dealer_ron = score_tables["non_dealer_ron"]
-dealer_tsumo = score_tables["dealer_tsumo"]
-dealer_ron = score_tables["dealer_ron"]
-
-before_ranking = get_ranking(scores)
-before_places = get_places(before_ranking)
-
-top_score = max(scores.values())
-top_player = before_places[0][1]
-
-score_diff = {player: top_score - score for player, score in scores.items()}
-
-print(before_ranking)
-print(before_places)
-print(top_score)
-print(score_diff)
-
-
-def search_non_dealer_tsumo():
+def search_non_dealer_tsumo(
+    scores, before_places, top_player, score_table, counters, deposit
+):
     results = []
     for winner in ["南", "西", "北"]:
         if winner == top_player:
             continue
 
-        for _, row in non_dealer_tsumo.iterrows():
+        for _, row in score_table.iterrows():
             new_scores = apply_non_dealer_tsumo(
                 scores,
                 winner=winner,
                 dealer="東",
                 non_dealer_pay=row["non_dealer_pay"],
                 dealer_pay=row["dealer_pay"],
-                counters=0,
-                deposit=0,
+                counters=counters,
+                deposit=deposit,
             )
 
             after_places = get_places(get_ranking(new_scores))
@@ -84,21 +59,23 @@ def search_non_dealer_tsumo():
     return results
 
 
-def search_non_dealer_ron():
+def search_non_dealer_ron(
+    scores, before_places, top_player, score_table, counters, deposit
+):
     results = []
     for winner in ["南", "西", "北"]:
         if winner == top_player:
             continue
 
-        for _, row in non_dealer_ron.iterrows():
+        for _, row in score_table.iterrows():
 
             new_scores = apply_ron(
                 scores,
                 winner=winner,
                 discarder=top_player,
                 point=row["point"],
-                counters=0,
-                deposit=0,
+                counters=counters,
+                deposit=deposit,
             )
 
             after_places = get_places(get_ranking(new_scores))
@@ -117,12 +94,14 @@ def search_non_dealer_ron():
     return results
 
 
-def search_dealer_tsumo():
+def search_dealer_tsumo(
+    scores, before_places, top_player, score_table, counters, deposit
+):
     results = []
-    for _, row in dealer_tsumo.iterrows():
+    for _, row in score_table.iterrows():
 
         new_scores = apply_dealer_tsumo(
-            scores, winner="東", pay=row["pay"], counters=0, deposit=0
+            scores, winner="東", pay=row["pay"], counters=counters, deposit=deposit
         )
 
         after_places = get_places(get_ranking(new_scores))
@@ -141,17 +120,19 @@ def search_dealer_tsumo():
     return results
 
 
-def search_dealer_ron():
+def search_dealer_ron(
+    scores, before_places, top_player, score_table, counters, deposit
+):
     results = []
-    for _, row in dealer_ron.iterrows():
+    for _, row in score_table.iterrows():
 
         new_scores = apply_ron(
             scores,
             winner="東",
             discarder=top_player,
             point=row["point"],
-            counters=0,
-            deposit=0,
+            counters=counters,
+            deposit=deposit,
         )
 
         after_places = get_places(get_ranking(new_scores))
@@ -170,11 +151,41 @@ def search_dealer_ron():
     return results
 
 
-results = []
+def search_conditions(scores, score_tables, counters=0, deposit=0):
+    before_ranking = get_ranking(scores)
+    before_places = get_places(before_ranking)
 
-results.extend(search_non_dealer_tsumo())
-results.extend(search_non_dealer_ron())
-results.extend(search_dealer_tsumo())
-results.extend(search_dealer_ron())
+    non_dealer_tsumo = score_tables["non_dealer_tsumo"]
+    non_dealer_ron = score_tables["non_dealer_ron"]
+    dealer_tsumo = score_tables["dealer_tsumo"]
+    dealer_ron = score_tables["dealer_ron"]
 
-print(results)
+    top_score = max(scores.values())
+    score_diff = {player: top_score - score for player, score in scores.items()}
+
+    top_player = before_places[0][1]
+
+    results = []
+
+    results.extend(
+        search_non_dealer_tsumo(
+            scores, before_places, top_player, non_dealer_tsumo, counters, deposit
+        )
+    )
+    results.extend(
+        search_non_dealer_ron(
+            scores, before_places, top_player, non_dealer_ron, counters, deposit
+        )
+    )
+    results.extend(
+        search_dealer_tsumo(
+            scores, before_places, top_player, dealer_tsumo, counters, deposit
+        )
+    )
+    results.extend(
+        search_dealer_ron(
+            scores, before_places, top_player, dealer_ron, counters, deposit
+        )
+    )
+
+    return results
