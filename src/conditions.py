@@ -12,6 +12,8 @@ score_tables = load_score_tables()
 
 results = search_conditions(scores, score_tables, counters=0, deposit=0)
 
+top_conditions = []
+
 for result in results:
 
     winner = result["winner"]
@@ -26,11 +28,21 @@ for result in results:
         if player == winner:
             after_place = place
 
-    if after_places == 1:
-        print(
-            "条件達成",
-            winner,
-            result["method"],
-            result["label"],
-            result["after_places"],
-        )
+    if after_place == 1:
+        method = result["method"]
+
+        exists = False
+
+        for top_checker in top_conditions:
+            top_winner = top_checker["winner"]
+            top_method = top_checker["method"]
+
+            if top_winner == winner and top_method == method:
+                exists = True
+                break
+
+        if exists == False:
+            top_conditions.append(result)
+
+for top_result in top_conditions:
+    print(top_result)
