@@ -14,19 +14,21 @@ results = search_conditions(scores, score_tables, counters=0, deposit=0)
 
 top_conditions = []
 
+
+def get_player_place(places, player_name):
+    for place, player, _ in places:
+        if player == player_name:
+            return place
+
+
 for result in results:
 
     winner = result["winner"]
     before_places = result["before_places"]
     after_places = result["after_places"]
 
-    for place, player, score in before_places:
-        if player == winner:
-            before_place = place
-
-    for place, player, score in after_places:
-        if player == winner:
-            after_place = place
+    before_place = get_player_place(before_places, winner)
+    after_place = get_player_place(after_places, winner)
 
     if after_place == 1:
         method = result["method"]
