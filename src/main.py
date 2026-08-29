@@ -1,5 +1,6 @@
 from csv_loader import load_score_tables
 from search_conditions import search_conditions
+from conditions import get_top_conditions
 
 
 def main():
@@ -15,7 +16,10 @@ def main():
 
     results = search_conditions(scores, score_tables, counters=0, deposit=0)
 
-    print(results)
+    top_conditions = get_top_conditions(results)
+
+    for top_condition in top_conditions:
+        print(top_condition)
 
 
 if __name__ == "__main__":
