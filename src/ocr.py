@@ -7,12 +7,24 @@ import numpy as np
 PROJECT_DIR = Path(__file__).resolve().parent.parent
 IMAGE_DIR = PROJECT_DIR / "images"
 
-image_path = IMAGE_DIR / "frame_59_success.png"
+video_path = IMAGE_DIR / "recording 2025-04-28 22.20.28.mov"
 
-image = cv2.imdecode(
-    np.fromfile(image_path, dtype=np.uint8),
-    cv2.IMREAD_COLOR,
-)
+cap = cv2.VideoCapture(str(video_path))
+
+players = {
+    "東": {
+        "coords": (680, 850, 50, 400),
+    },
+    "南": {
+        "coords": (680, 850, 400, 750),
+    },
+    "西": {
+        "coords": (680, 850, 800, 1100),
+    },
+    "北": {
+        "coords": (680, 850, 1100, 1400),
+    },
+}
 
 
 # OCR score extraction
@@ -24,9 +36,12 @@ def extract_score(img):
     print("OCR結果")
     print(repr(text))
 
-    match = re.search(r"[0-9,]+", text)
+    match = re.search(r"[0-9][0-9,]*", text)
     if match:
-        return int(match.group().replace(",", ""))
+        try:
+            return int(match.group().replace(",", ""))
+        except ValueError:
+            return None
     return None
 
 
@@ -67,22 +82,35 @@ def validate_scores(scores, deposit=0):
     return True, None
 
 
-players = {
-    "東": {
-        "coords": (680, 850, 50, 400),
-    },
-    "南": {
-        "coords": (680, 850, 400, 750),
-    },
-    "西": {
-        "coords": (680, 850, 800, 1100),
-    },
-    "北": {
-        "coords": (680, 850, 1100, 1400),
-    },
-}
+def read_video_scores(cap, players):
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    frame_count = 0
+
+    results = []
+
+    while True:
+        ret, frame = cap.read()
+
+        if not ret:
+            break
+
+        if frame_count % int(fps) == 0:
+            scores = read_scores(frame, players)
+
+            is_valid, wrong_player = validate_scores(scores, deposit=0)
+
+            if is_valid:
+                results.append(scores)
+            else:
+                print(f"読み取り失敗: {scores}, " f"wrong_player={wrong_player}")
+
+        frame_count += 1
+
+    return results
 
 
-result = read_scores(image, players)
-print(validate_scores(result, deposit=0))
+result = read_video_scores(cap, players)
+
+cap.release()
+
 print(result)
