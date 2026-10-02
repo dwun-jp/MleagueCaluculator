@@ -15,25 +15,6 @@ image = cv2.imdecode(
 )
 
 
-# Image preprocessing
-def preprocess_image(img, method):
-    if method == "gray":
-        return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    elif method == "enlarge":
-        resized = cv2.resize(img, None, fx=2, fy=2, interpolation=cv2.INTER_LINEAR)
-        return cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
-    elif method == "honda":
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        equalized = cv2.equalizeHist(gray)
-        blurred = cv2.GaussianBlur(equalized, (0, 0), sigmaX=2)
-        sharpened = cv2.addWeighted(equalized, 1.5, blurred, -0.5, 0)
-        binary = cv2.adaptiveThreshold(
-            sharpened, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2
-        )
-        return binary
-    return img
-
-
 # OCR score extraction
 def extract_score(img):
     config = "--psm 6 -c tessedit_char_whitelist=0123456789,"
@@ -70,6 +51,22 @@ def read_scores(img, players):
     return scores
 
 
+def validate_scores(scores, deposit=0):
+    for player, score in scores.items():
+        if score is None:
+            return False, player
+
+        elif not (-200000 < score < 200000):
+            return False, player
+
+    all_players_score = sum(scores.values())
+    all_score = all_players_score + deposit * 1000
+
+    if all_score != 100000:
+        return False, None
+    return True, None
+
+
 players = {
     "東": {
         "coords": (680, 850, 50, 400),
@@ -87,4 +84,5 @@ players = {
 
 
 result = read_scores(image, players)
+print(validate_scores(result, deposit=0))
 print(result)
