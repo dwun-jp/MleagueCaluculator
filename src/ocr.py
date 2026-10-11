@@ -3,6 +3,7 @@ import pytesseract
 import re
 from pathlib import Path
 import numpy as np
+import capture
 
 PROJECT_DIR = Path(__file__).resolve().parent.parent
 IMAGE_DIR = PROJECT_DIR / "images"
@@ -109,8 +110,16 @@ def read_video_scores(cap, players):
     return results
 
 
-result = read_video_scores(cap, players)
+if __name__ == "__main__":
 
-cap.release()
+    img = capture.capture_screen()
+    img = read_scores(img, players)
+    result = validate_scores(img, deposit=0)
 
-print(result)
+    print(result)
+
+    # result = read_video_scores(cap, players)
+
+    # cap.release()
+
+    # print(result)
