@@ -4,6 +4,7 @@ import re
 from pathlib import Path
 import numpy as np
 import capture
+from validation import validate_scores
 
 PROJECT_DIR = Path(__file__).resolve().parent.parent
 IMAGE_DIR = PROJECT_DIR / "images"
@@ -12,7 +13,7 @@ video_path = IMAGE_DIR / "recording 2025-04-28 22.20.28.mov"
 
 cap = cv2.VideoCapture(str(video_path))
 
-players = {
+crp_900_1440 = {
     "東": {
         "coords": (680, 850, 50, 400),
     },
@@ -24,6 +25,21 @@ players = {
     },
     "北": {
         "coords": (680, 850, 1100, 1400),
+    },
+}
+
+crp_1600_2560 = {
+    "東": {
+        "coords": (1250, 1500, 200, 700),
+    },
+    "南": {
+        "coords": (1250, 1500, 800, 1300),
+    },
+    "西": {
+        "coords": (1250, 1500, 1400, 1850),
+    },
+    "北": {
+        "coords": (1250, 1500, 1950, 2400),
     },
 }
 
@@ -67,22 +83,6 @@ def read_scores(img, players):
     return scores
 
 
-def validate_scores(scores, deposit=0):
-    for player, score in scores.items():
-        if score is None:
-            return False, player
-
-        elif not (-200000 < score < 200000):
-            return False, player
-
-    all_players_score = sum(scores.values())
-    all_score = all_players_score + deposit * 1000
-
-    if all_score != 100000:
-        return False, None
-    return True, None
-
-
 def read_video_scores(cap, players):
     fps = cap.get(cv2.CAP_PROP_FPS)
     frame_count = 0
@@ -102,6 +102,7 @@ def read_video_scores(cap, players):
 
             if is_valid:
                 results.append(scores)
+                print(frame.shape)
             else:
                 print(f"読み取り失敗: {scores}, " f"wrong_player={wrong_player}")
 
@@ -113,13 +114,14 @@ def read_video_scores(cap, players):
 if __name__ == "__main__":
 
     img = capture.capture_screen()
-    img = read_scores(img, players)
+    img = read_scores(img, crp_1600_2560)
     result = validate_scores(img, deposit=0)
 
     print(result)
+"""
+    result = read_video_scores(cap, crp_1600_2560)
 
-    # result = read_video_scores(cap, players)
+    cap.release()
 
-    # cap.release()
-
-    # print(result)
+    print(result)
+"""
