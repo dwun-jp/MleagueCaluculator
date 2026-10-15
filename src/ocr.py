@@ -3,36 +3,7 @@ import pytesseract
 import re
 import capture
 from validation import validate_scores
-
-crp_900_1440 = {
-    "東": {
-        "coords": (680, 850, 50, 400),
-    },
-    "南": {
-        "coords": (680, 850, 400, 750),
-    },
-    "西": {
-        "coords": (680, 850, 800, 1100),
-    },
-    "北": {
-        "coords": (680, 850, 1100, 1400),
-    },
-}
-
-crp_1600_2560 = {
-    "東": {
-        "coords": (1250, 1500, 200, 700),
-    },
-    "南": {
-        "coords": (1250, 1500, 800, 1300),
-    },
-    "西": {
-        "coords": (1250, 1500, 1400, 1850),
-    },
-    "北": {
-        "coords": (1250, 1500, 1950, 2400),
-    },
-}
+import configration
 
 
 def extract_score(img):
@@ -76,7 +47,7 @@ def read_scores(img, players):
 if __name__ == "__main__":
 
     img = capture.capture_screen()
-    img = read_scores(img, crp_1600_2560)
+    img = read_scores(img, configration.crop_1600_2560)
     result = validate_scores(img, deposit=0)
 
     print(result)
