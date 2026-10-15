@@ -1,17 +1,8 @@
 import cv2
 import pytesseract
 import re
-from pathlib import Path
-import numpy as np
 import capture
 from validation import validate_scores
-
-PROJECT_DIR = Path(__file__).resolve().parent.parent
-IMAGE_DIR = PROJECT_DIR / "images"
-
-video_path = IMAGE_DIR / "recording 2025-04-28 22.20.28.mov"
-
-cap = cv2.VideoCapture(str(video_path))
 
 crp_900_1440 = {
     "東": {
@@ -44,7 +35,6 @@ crp_1600_2560 = {
 }
 
 
-# OCR score extraction
 def extract_score(img):
     config = "--psm 6 -c tessedit_char_whitelist=0123456789,"
 
@@ -83,34 +73,6 @@ def read_scores(img, players):
     return scores
 
 
-def read_video_scores(cap, players):
-    fps = cap.get(cv2.CAP_PROP_FPS)
-    frame_count = 0
-
-    results = []
-
-    while True:
-        ret, frame = cap.read()
-
-        if not ret:
-            break
-
-        if frame_count % int(fps) == 0:
-            scores = read_scores(frame, players)
-
-            is_valid, wrong_player = validate_scores(scores, deposit=0)
-
-            if is_valid:
-                results.append(scores)
-                print(frame.shape)
-            else:
-                print(f"読み取り失敗: {scores}, " f"wrong_player={wrong_player}")
-
-        frame_count += 1
-
-    return results
-
-
 if __name__ == "__main__":
 
     img = capture.capture_screen()
@@ -118,10 +80,3 @@ if __name__ == "__main__":
     result = validate_scores(img, deposit=0)
 
     print(result)
-"""
-    result = read_video_scores(cap, crp_1600_2560)
-
-    cap.release()
-
-    print(result)
-"""
