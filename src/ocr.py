@@ -3,7 +3,7 @@ import pytesseract
 import re
 import capture
 from validation import validate_scores
-import configration
+import configuration
 
 
 def extract_score(img):
@@ -32,6 +32,9 @@ def read_scores(img, players):
         cropped = img[y1:y2, x1:x2]
         gray = cv2.cvtColor(cropped, cv2.COLOR_BGR2GRAY)
 
+        cv2.imshow("Cropped Image", gray)
+        cv2.waitKey(0)
+
         _, binary = cv2.threshold(
             gray,
             0,
@@ -47,7 +50,7 @@ def read_scores(img, players):
 if __name__ == "__main__":
 
     img = capture.capture_screen()
-    img = read_scores(img, configration.crop_1600_2560)
+    img = read_scores(img, configuration.crop_1600_2560)
     result = validate_scores(img, deposit=0)
 
     print(result)
