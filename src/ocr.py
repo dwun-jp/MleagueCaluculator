@@ -3,7 +3,7 @@ import pytesseract
 import re
 import capture
 from validation import validate_scores
-import configuration
+import configration
 
 
 def extract_score(img):
@@ -47,10 +47,52 @@ def read_scores(img, players):
     return scores
 
 
+def extract_round(img):
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    _, binary = cv2.threshold(
+        gray,
+        0,
+        255,
+        cv2.THRESH_BINARY + cv2.THRESH_OTSU,
+    )
+
+    text = pytesseract.image_to_string(
+        binary,
+        lang="jpn",
+        config="--psm 13",
+    )
+
+    return parse_round(text)
+
+
+def parse_round(text):
+    text = re.sub(r"\s+", "", text)
+
+    match = re.search(r"([東南西北])([1-4])局", text)
+
+    if match:
+        return match.group(1) + match.group(2) + "局"
+
+    return None
+
+
 if __name__ == "__main__":
 
+    frame = capture.capture_screen()
+
+    y1, y2, x1, x2 = configration.ROUND_COORDS
+    cropped = frame[y1:y2, x1:x2]
+
+    print(extract_round(cropped))
+
+    cv2.imshow("Round OCR", cropped)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    """
     img = capture.capture_screen()
-    img = read_scores(img, configuration.crop_1600_2560)
+    img = read_scores(img, configration.crop_1600_2560)
     result = validate_scores(img, deposit=0)
 
     print(result)
+    """
