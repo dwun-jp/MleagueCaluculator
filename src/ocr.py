@@ -48,7 +48,10 @@ def read_scores(img, players):
 
 
 def extract_round(img):
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    y1, y2, x1, x2 = configration.ROUND_COORDS
+    cropped = img[y1:y2, x1:x2]
+
+    gray = cv2.cvtColor(cropped, cv2.COLOR_BGR2GRAY)
 
     _, binary = cv2.threshold(
         gray,
@@ -77,19 +80,45 @@ def parse_round(text):
     return None
 
 
+def extract_number(img):
+    config = "--psm 10 -c tessedit_char_whitelist=0123456789"
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    text = pytesseract.image_to_string(
+        gray,
+        config=config,
+    )
+
+    cv2.imshow("Number OCR", gray)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+    match = re.search(r"\d+", text)
+
+    if match:
+        return int(match.group())
+
+    return None
+
+
 if __name__ == "__main__":
 
     frame = capture.capture_screen()
 
-    y1, y2, x1, x2 = configration.ROUND_COORDS
-    cropped = frame[y1:y2, x1:x2]
+    y1, y2, x1, x2 = configration.DEPOSIT_COORDS
+    deposit = frame[y1:y2, x1:x2]
 
-    print(extract_round(cropped))
+    y1, y2, x1, x2 = configration.COUNTER_COORDS
+    counters = frame[y1:y2, x1:x2]
 
-    cv2.imshow("Round OCR", cropped)
+    print(extract_number(deposit))
+    print(extract_number(counters))
+
+    """
+    cv2.imshow("Round OCR", frame)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-    """
+    
     img = capture.capture_screen()
     img = read_scores(img, configration.crop_1600_2560)
     result = validate_scores(img, deposit=0)
