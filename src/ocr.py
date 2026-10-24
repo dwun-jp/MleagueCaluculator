@@ -11,9 +11,6 @@ def extract_score(img):
 
     text = pytesseract.image_to_string(img, config=config)
 
-    print("OCR結果")
-    print(repr(text))
-
     match = re.search(r"[0-9][0-9,]*", text)
     if match:
         try:
@@ -32,9 +29,6 @@ def read_scores(img, players):
         cropped = img[y1:y2, x1:x2]
         gray = cv2.cvtColor(cropped, cv2.COLOR_BGR2GRAY)
 
-        cv2.imshow("Cropped Image", gray)
-        cv2.waitKey(0)
-
         _, binary = cv2.threshold(
             gray,
             0,
@@ -47,8 +41,8 @@ def read_scores(img, players):
     return scores
 
 
-def extract_round(img):
-    y1, y2, x1, x2 = configration.ROUND_COORDS
+def extract_round(img, coords):
+    y1, y2, x1, x2 = coords
     cropped = img[y1:y2, x1:x2]
 
     gray = cv2.cvtColor(cropped, cv2.COLOR_BGR2GRAY)
@@ -82,16 +76,13 @@ def parse_round(text):
 
 def extract_number(img):
     config = "--psm 10 -c tessedit_char_whitelist=0123456789"
+
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     text = pytesseract.image_to_string(
         gray,
         config=config,
     )
-
-    cv2.imshow("Number OCR", gray)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
 
     match = re.search(r"\d+", text)
 
@@ -101,18 +92,30 @@ def extract_number(img):
     return None
 
 
+def read_number(img, coords):
+    y1, y2, x1, x2 = coords
+    cropped = img[y1:y2, x1:x2]
+
+    return extract_number(cropped)
+
+
 if __name__ == "__main__":
 
     frame = capture.capture_screen()
 
-    y1, y2, x1, x2 = configration.DEPOSIT_COORDS
-    deposit = frame[y1:y2, x1:x2]
+    scores = read_scores(frame, configration.crop_1600_2560)
+    round = extract_round(frame, configration.ROUND_COORDS)
+    deposit = read_number(frame, configration.DEPOSIT_COORDS)
+    counters = read_number(frame, configration.COUNTER_COORDS)
 
-    y1, y2, x1, x2 = configration.COUNTER_COORDS
-    counters = frame[y1:y2, x1:x2]
-
-    print(extract_number(deposit))
-    print(extract_number(counters))
+    is_valid, wrong_player = validate_scores(scores, deposit)
+    if is_valid:
+        print(f"読み取り成功: {scores}, {round}, 供託:{deposit}, {counters}本場")
+    else:
+        print(
+            f"読み取り失敗: {scores}, {round}, 供託:{deposit}, {counters}本場, "
+            f"wrong_player={wrong_player}"
+        )
 
     """
     cv2.imshow("Round OCR", frame)
