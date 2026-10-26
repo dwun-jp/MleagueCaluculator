@@ -31,7 +31,7 @@ def monitor_round(confirmed_state):
             candidate = None
             count = 0
             print(
-                f"局・本場の変化が不正です: {confirmed_state['round']}, {confirmed_state['counters']} -> {round_value}, {counters}"
+                f"次局を確認中: {confirmed_state['round']}, {confirmed_state['counters']} -> {round_value}, {counters}"
             )
             time.sleep(3)
             continue
@@ -57,45 +57,46 @@ def monitor_round(confirmed_state):
 
 
 def main():
-    pending_state = create_empty_state()
-    confirmed_state = None
+    while True:
+        pending_state = create_empty_state()
+        confirmed_state = None
 
-    while confirmed_state is None:
-        frame = capture.capture_screen()
-        ocr_result = read_game_info(frame)
+        while confirmed_state is None:
+            frame = capture.capture_screen()
+            ocr_result = read_game_info(frame)
 
-        # 局・本場が読み取れなければ補完しない
-        if ocr_result["round"] is None or ocr_result["counters"] is None:
+            # 局・本場が読み取れなければ補完しない
+            if ocr_result["round"] is None or ocr_result["counters"] is None:
+                time.sleep(1)
+                continue
+
+            # 同じ局・本場の情報だけを補完
+            if pending_state["round"] is not None:
+                if (
+                    pending_state["round"],
+                    pending_state["counters"],
+                ) != (
+                    ocr_result["round"],
+                    ocr_result["counters"],
+                ):
+                    pending_state = create_empty_state()
+
+            pending_state = update_pending_state(pending_state, ocr_result)
+
+            if is_complete(pending_state):
+                confirmed_state = confirm_state(pending_state)
+
+                if confirmed_state is None:
+                    print("妥当性チェック失敗：再取得します")
+                    pending_state = create_empty_state()
+
+            print("一時保存:", pending_state)
+            print("確定:", confirmed_state)
+
             time.sleep(1)
-            continue
 
-        # 同じ局・本場の情報だけを補完
-        if pending_state["round"] is not None:
-            if (
-                pending_state["round"],
-                pending_state["counters"],
-            ) != (
-                ocr_result["round"],
-                ocr_result["counters"],
-            ):
-                pending_state = create_empty_state()
-
-        pending_state = update_pending_state(pending_state, ocr_result)
-
-        if is_complete(pending_state):
-            confirmed_state = confirm_state(pending_state)
-
-            if confirmed_state is None:
-                print("妥当性チェック失敗：再取得します")
-                pending_state = create_empty_state()
-
-        print("一時保存:", pending_state)
-        print("確定:", confirmed_state)
-
-        time.sleep(1)
-
-    print("ゲーム状態を確定しました")
-    monitor_round(confirmed_state)
+        print("ゲーム状態を確定しました")
+        monitor_round(confirmed_state)
 
 
 if __name__ == "__main__":
