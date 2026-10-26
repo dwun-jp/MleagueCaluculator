@@ -7,11 +7,11 @@ import configration
 
 
 def extract_score(img):
-    config = "--psm 6 -c tessedit_char_whitelist=0123456789,"
+    config = "--psm 6 -c tessedit_char_whitelist=0123456789,-"
 
     text = pytesseract.image_to_string(img, config=config)
 
-    match = re.search(r"[0-9][0-9,]*", text)
+    match = re.search(r"-?[0-9][0-9,]*", text)
     if match:
         try:
             return int(match.group().replace(",", ""))
