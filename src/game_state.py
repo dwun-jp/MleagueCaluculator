@@ -1,5 +1,7 @@
 from copy import deepcopy
 from validation import validate_scores
+from ocr import read_game_info
+import capture
 
 
 def create_empty_state():
@@ -102,19 +104,15 @@ test_rounds = [
 
 pending = create_empty_state()
 
-first_result = {
-    "round": "南3局",
-    "counters": 0,
-    "deposit": 0,
-    "scores": {
-        "東": 25000,
-        "南": 25000,
-        "西": 27000,
-        "北": 23000,
-    },
-}
+frame = capture.capture_screen()
 
-pending = update_pending_state(pending, first_result)
+result = read_game_info(frame)
+
+print(f"OCR結果: {result}")
+
+"""
+
+pending = update_pending_state(pending, result)
 confirmed_state = confirm_state(pending)
 
 candidate = None
@@ -139,14 +137,4 @@ for round_value, counters in test_rounds:
         pending_state = create_empty_state()
         confirmed_state = None
 
-"""
-pending = update_pending_state(pending, first_result)
-print(confirm_state(pending))  # False
-
-pending = update_pending_state(pending, second_result)
-print(confirm_state(pending))  # True
-
-pending["scores"]["東"] = 30000
-
-print(confirm_state(pending))  # 25000
 """

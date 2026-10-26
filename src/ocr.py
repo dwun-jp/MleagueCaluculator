@@ -99,6 +99,27 @@ def read_number(img, coords):
     return extract_number(cropped)
 
 
+def read_game_info(frame):
+    return {
+        "scores": read_scores(
+            frame,
+            configration.crop_1600_2560,
+        ),
+        "round": extract_round(
+            frame,
+            configration.ROUND_COORDS,
+        ),
+        "deposit": read_number(
+            frame,
+            configration.DEPOSIT_COORDS,
+        ),
+        "counters": read_number(
+            frame,
+            configration.COUNTER_COORDS,
+        ),
+    }
+
+
 if __name__ == "__main__":
 
     frame = capture.capture_screen()
