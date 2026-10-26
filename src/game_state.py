@@ -94,21 +94,75 @@ def check_round_change(
     return count >= 2, candidate, count
 
 
-test_rounds = [
-    ("南3局", 0),
-    ("南3局", 1),
-    ("南3局", 0),
-    ("南3局", 1),
-    ("南3局", 1),
-]
+ROUNDS = [f"{wind}{num}局" for wind in ("東", "南") for num in range(1, 5)]
 
-pending = create_empty_state()
 
-frame = capture.capture_screen()
+def is_valid_round_transition(
+    confirmed_state,
+    round_value,
+    counters,
+):
+    if confirmed_state is None:
+        return False
 
-result = read_game_info(frame)
+    if round_value is None or counters is None:
+        return False
 
-print(f"OCR結果: {result}")
+    old_round = confirmed_state["round"]
+    old_counters = confirmed_state["counters"]
+
+    if (
+        old_round not in ROUNDS
+        or round_value not in ROUNDS
+        or old_counters is None
+        or counters < 0
+    ):
+        return False
+
+    # 同じ局で連荘する場合
+    if round_value == old_round:
+        return counters == old_counters + 1
+
+    # 次の局を取得
+    old_index = ROUNDS.index(old_round)
+
+    if old_index + 1 >= len(ROUNDS):
+        return False
+
+    next_round = ROUNDS[old_index + 1]
+
+    # 次の局に進む場合
+    if round_value == next_round:
+        return counters in (0, old_counters + 1)
+
+    return False
+
+
+if __name__ == "__main__":
+    confirmed_state = {
+        "round": "南2局",
+        "counters": 1,
+    }
+
+    test_cases = [
+        ("南2局", 2),
+        ("南3局", 2),
+        ("南3局", 0),
+        ("南2局", 7),
+        ("南3局", 1),
+        ("南4局", 0),
+        ("南2局", 0),
+    ]
+
+    for round_value, counters in test_cases:
+        result = is_valid_round_transition(
+            confirmed_state,
+            round_value,
+            counters,
+        )
+
+        print(f"{round_value} {counters}本場: {result}")
+
 
 """
 

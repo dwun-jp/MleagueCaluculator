@@ -9,6 +9,7 @@ from game_state import (
     is_complete,
     confirm_state,
     check_round_change,
+    is_valid_round_transition,
 )
 
 
@@ -21,6 +22,19 @@ def monitor_round(confirmed_state):
 
         round_value = extract_round(frame, configration.ROUND_COORDS)
         counters = read_number(frame, configration.COUNTER_COORDS)
+
+        if not is_valid_round_transition(
+            confirmed_state,
+            round_value,
+            counters,
+        ):
+            candidate = None
+            count = 0
+            print(
+                f"局・本場の変化が不正です: {confirmed_state['round']}, {confirmed_state['counters']} -> {round_value}, {counters}"
+            )
+            time.sleep(3)
+            continue
 
         changed, candidate, count = check_round_change(
             confirmed_state,
@@ -39,7 +53,7 @@ def monitor_round(confirmed_state):
             print("新しい局を検出しました")
             return
 
-        time.sleep(5)
+        time.sleep(3)
 
 
 def main():
