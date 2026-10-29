@@ -18,6 +18,22 @@ def create_empty_state():
     }
 
 
+def create_reading_tracker():
+    return {
+        "candidate": None,
+        "count": 0,
+    }
+
+
+def create_reading_trackers():
+    return {
+        "active_round": None,
+        "round_info": create_reading_tracker(),
+        "deposit": create_reading_tracker(),
+        "scores": {seat: create_reading_tracker() for seat in ("東", "南", "西", "北")},
+    }
+
+
 def update_pending_state(pending_state, ocr_result):
 
     for key in ("round", "counters", "deposit"):
@@ -138,31 +154,101 @@ def is_valid_round_transition(
     return False
 
 
-if __name__ == "__main__":
-    confirmed_state = {
-        "round": "南2局",
-        "counters": 1,
+def check_stable_reading(tracker, value, required_count=2):
+
+    if value is None:
+        tracker["candidate"] = None
+        tracker["count"] = 0
+        return None
+
+    if tracker["candidate"] == value:
+        tracker["count"] += 1
+    else:
+        tracker["candidate"] = value
+        tracker["count"] = 1
+
+    if tracker["count"] >= required_count:
+        return value
+
+    return None
+
+
+def get_stable_readings(ocr_result, trackers):
+
+    round_value = ocr_result["round"]
+    counters = ocr_result["counters"]
+
+    if round_value is None or counters is None:
+        round_info = None
+    else:
+        round_info = (round_value, counters)
+
+    stable_round = check_stable_reading(
+        trackers["round_info"],
+        round_info,
+    )
+
+    if stable_round is None:
+        return None
+
+    if stable_round != trackers["active_round"]:
+        trackers["active_round"] = stable_round
+
+        trackers["deposit"] = create_reading_tracker()
+
+        for seat in trackers["scores"]:
+            trackers["scores"][seat] = create_reading_tracker()
+
+    stable_result = {
+        "round": stable_round[0],
+        "counters": stable_round[1],
+        "deposit": check_stable_reading(
+            trackers["deposit"],
+            ocr_result["deposit"],
+        ),
+        "scores": {},
     }
 
-    test_cases = [
-        ("南2局", 2),
-        ("南3局", 2),
-        ("南3局", 0),
-        ("南2局", 7),
-        ("南3局", 1),
-        ("南4局", 0),
-        ("南2局", 0),
-    ]
-
-    for round_value, counters in test_cases:
-        result = is_valid_round_transition(
-            confirmed_state,
-            round_value,
-            counters,
+    for seat, score in ocr_result["scores"].items():
+        stable_result["scores"][seat] = check_stable_reading(
+            trackers["scores"][seat],
+            score,
         )
 
-        print(f"{round_value} {counters}本場: {result}")
+    return stable_result
 
+
+if __name__ == "__main__":
+    trackers = create_reading_trackers()
+
+    first = {
+        "round": "南2局",
+        "counters": 1,
+        "deposit": 0,
+        "scores": {
+            "東": 27300,
+            "南": 13700,
+            "西": 29300,
+            "北": 29700,
+        },
+    }
+
+    second = {
+        "round": "南2局",
+        "counters": 2,
+        "deposit": 0,
+        "scores": {
+            "東": 27300,
+            "南": 13700,
+            "西": 29300,
+            "北": 29700,
+        },
+    }
+
+    for data in [first] * 3 + [second] * 3:
+        result = get_stable_readings(data, trackers)
+
+        print(f"入力: {data['round']} {data['counters']}本場, " f"結果: {result}")
 
 """
 

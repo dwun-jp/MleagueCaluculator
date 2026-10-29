@@ -13,7 +13,3 @@ def calculate_conditions(confirmed_state, score_tables):
     )
 
     return get_top_conditions(results)
-
-
-if __name__ == "__main__":
-    main()

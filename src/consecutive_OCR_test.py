@@ -11,6 +11,10 @@ from game_state import (
     check_round_change,
     is_valid_round_transition,
 )
+from game_state import (
+    create_reading_trackers,
+    get_stable_readings,
+)
 
 from csv_loader import load_score_tables
 from main import calculate_conditions
@@ -61,31 +65,43 @@ def monitor_round(confirmed_state):
 
 def main():
     score_tables = load_score_tables()
+
     while True:
         pending_state = create_empty_state()
         confirmed_state = None
+        trackers = create_reading_trackers()
 
         while confirmed_state is None:
             frame = capture.capture_screen()
             ocr_result = read_game_info(frame)
 
-            # 局・本場が読み取れなければ補完しない
-            if ocr_result["round"] is None or ocr_result["counters"] is None:
+            # ★追加：OCR結果を複数回照合
+            stable_result = get_stable_readings(
+                ocr_result,
+                trackers,
+            )
+
+            # ★追加：局・本場がまだ安定していない場合
+            if stable_result is None:
                 time.sleep(1)
                 continue
 
-            # 同じ局・本場の情報だけを補完
+            # ★変更：照合済みの局・本場で比較
             if pending_state["round"] is not None:
                 if (
                     pending_state["round"],
                     pending_state["counters"],
                 ) != (
-                    ocr_result["round"],
-                    ocr_result["counters"],
+                    stable_result["round"],
+                    stable_result["counters"],
                 ):
                     pending_state = create_empty_state()
 
-            pending_state = update_pending_state(pending_state, ocr_result)
+            # ★変更：照合済みの値だけを保存
+            pending_state = update_pending_state(
+                pending_state,
+                stable_result,
+            )
 
             if is_complete(pending_state):
                 confirmed_state = confirm_state(pending_state)
@@ -93,7 +109,9 @@ def main():
                 if confirmed_state is None:
                     print("妥当性チェック失敗：再取得します")
                     pending_state = create_empty_state()
+                    trackers = create_reading_trackers()
 
+            print("照合結果:", stable_result)
             print("一時保存:", pending_state)
             print("確定:", confirmed_state)
 
