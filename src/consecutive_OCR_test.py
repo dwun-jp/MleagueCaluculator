@@ -12,6 +12,9 @@ from game_state import (
     is_valid_round_transition,
 )
 
+from csv_loader import load_score_tables
+from main import calculate_conditions
+
 
 def monitor_round(confirmed_state):
     candidate = None
@@ -57,6 +60,7 @@ def monitor_round(confirmed_state):
 
 
 def main():
+    score_tables = load_score_tables()
     while True:
         pending_state = create_empty_state()
         confirmed_state = None
@@ -96,6 +100,15 @@ def main():
             time.sleep(1)
 
         print("ゲーム状態を確定しました")
+
+        top_conditions = calculate_conditions(
+            confirmed_state,
+            score_tables,
+        )
+
+        for top_condition in top_conditions:
+            print(top_condition)
+
         monitor_round(confirmed_state)
 
 

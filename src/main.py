@@ -3,23 +3,16 @@ from search_conditions import search_conditions
 from conditions import get_top_conditions
 
 
-def main():
+def calculate_conditions(confirmed_state, score_tables):
 
-    scores = {
-        "東": 20000,
-        "南": 30000,
-        "西": 20000,
-        "北": 15000,
-    }
+    results = search_conditions(
+        confirmed_state["scores"],
+        score_tables,
+        counters=confirmed_state["counters"],
+        deposit=confirmed_state["deposit"],
+    )
 
-    score_tables = load_score_tables()
-
-    results = search_conditions(scores, score_tables, counters=0, deposit=0)
-
-    top_conditions = get_top_conditions(results)
-
-    for top_condition in top_conditions:
-        print(top_condition)
+    return get_top_conditions(results)
 
 
 if __name__ == "__main__":
