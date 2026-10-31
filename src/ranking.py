@@ -1,4 +1,3 @@
-# 順番に並べ替えて、同点なら同じ順位にする
 def get_ranking(scores):
     return sorted(scores.items(), key=lambda x: x[1], reverse=True)
 

@@ -1,26 +1,3 @@
-"""
-探索処理
-
-入力:
-- scores
-- score_tables
-- counters=0
-- deposit=0
-
-探索前:
-- before_ranking
-- before_places
-- top_score
-- top_player
-- score_diff
-
-探索後:
-- after_places
-
-出力:
-- results
-"""
-
 from ranking import get_ranking, get_places
 from score import apply_ron, apply_dealer_tsumo, apply_non_dealer_tsumo
 

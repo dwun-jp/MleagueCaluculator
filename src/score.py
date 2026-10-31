@@ -1,4 +1,3 @@
-# 点数処理 ロン、子ツモ、親ツモ
 def apply_ron(scores, winner, discarder, point, counters=0, deposit=0):
 
     new_scores = scores.copy()

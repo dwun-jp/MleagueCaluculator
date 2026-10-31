@@ -1,7 +1,5 @@
 from copy import deepcopy
 from validation import validate_scores
-from ocr import read_game_info
-import capture
 
 
 def create_empty_state():
