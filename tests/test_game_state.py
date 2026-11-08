@@ -132,3 +132,55 @@ def test_is_complete():
     state["scores"]["東"] = 25000
     state["deposit"] = None
     assert is_complete(state) is False
+
+
+from game_state import confirm_state
+
+
+def test_confirm_state():
+    state = {
+        "round": "南2局",
+        "counters": 1,
+        "deposit": 0,
+        "scores": {
+            "東": 27300,
+            "南": 13700,
+            "西": 29300,
+            "北": 29700,
+        },
+    }
+
+    confirmed = confirm_state(state)
+
+    # 正常に確定できる
+    assert confirmed == state
+
+    # 確定データは別の辞書として保存される
+    assert confirmed is not state
+    assert confirmed["scores"] is not state["scores"]
+
+    # 元のデータを変更しても確定データは変わらない
+    state["scores"]["東"] = 30000
+    assert confirmed["scores"]["東"] == 27300
+
+
+def test_confirm_state_incomplete():
+    state = create_empty_state()
+
+    assert confirm_state(state) is None
+
+
+def test_confirm_state_invalid_scores():
+    state = {
+        "round": "南2局",
+        "counters": 1,
+        "deposit": 0,
+        "scores": {
+            "東": 27300,
+            "南": 13700,
+            "西": 29300,
+            "北": 28700,  # 正しい値より1000点少ない
+        },
+    }
+
+    assert confirm_state(state) is None

@@ -1,4 +1,7 @@
 def validate_scores(scores, deposit=0):
+    if deposit is None:
+        return False, None
+
     for player, score in scores.items():
         if score is None:
             return False, player
