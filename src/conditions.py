@@ -12,7 +12,7 @@ def get_top_conditions(results):
         winner = result["winner"]
         before_places = result["before_places"]
         after_places = result["after_places"]
-
+        # 和了前の順位を利用する条件計算で使用するかも？
         before_place = get_player_place(before_places, winner)
         after_place = get_player_place(after_places, winner)
 
@@ -25,7 +25,11 @@ def get_top_conditions(results):
                 top_winner = top_checker["winner"]
                 top_method = top_checker["method"]
 
-                if top_winner == winner and top_method == method:
+                if (
+                    top_winner == winner
+                    and top_method == method
+                    and top_checker["discarder"] == result["discarder"]
+                ):
                     exists = True
                     break
 
