@@ -3,6 +3,7 @@ from search_conditions import search_conditions
 from conditions import get_top_conditions
 
 from game_session import get_confirmed_state, monitor_round
+from display_formatter import create_display_data
 
 
 def calculate_conditions(confirmed_state, score_tables):
@@ -33,8 +34,12 @@ def main():
             score_tables,
         )
 
-        for top_condition in top_conditions:
-            print(top_condition)
+        display_data = create_display_data(
+            confirmed_state,
+            top_conditions,
+        )
+
+        print(display_data)
 
         # 次局まで監視
         monitor_round(confirmed_state)
