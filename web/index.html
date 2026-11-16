@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <title>Mリーグ条件計算</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main class="container">
+        <header>
+            <h1 id="round">読み込み中</h1>
+            <p>
+                <span id="counters">-</span>本場　
+                供託<span id="deposit">-</span>本
+            </p>
+        </header>
+
+         <div class="status" id="status">確認中...</div>
+
+        <section class="player" data-seat="東">
+            <h2>東家</h2>
+
+            <div class="condition">
+                <span>点差</span>
+                <span data-field="diff">-</span>
+            </div>
+
+            <div class="condition">
+                <span>自摸</span>
+                <span data-field="tsumo">-</span>
+            </div>
+
+            <div class="condition">
+                <span>直撃</span>
+                <span data-field="ron">-</span>
+            </div>
+        </section>
+        <section class="player" data-seat="南">
+            <h2>南家</h2>
+
+            <div class="condition">
+                <span>点差</span>
+                <span data-field="diff">-</span>
+            </div>
+
+            <div class="condition">
+                <span>自摸</span>
+                <span data-field="tsumo">-</span>
+            </div>
+
+            <div class="condition">
+                <span>直撃</span>
+                <span data-field="ron">-</span>
+            </div>
+        </section>
+
+        <section class="player" data-seat="西">
+            <h2>西家</h2>
+
+            <div class="condition">
+                <span>点差</span>
+                <span data-field="diff">-</span>
+            </div>
+
+            <div class="condition">
+                <span>自摸</span>
+                 <span data-field="tsumo">-</span>
+            </div>
+
+            <div class="condition">
+                <span>直撃</span>
+                <span data-field="ron">-</span>
+            </div>
+        </section>
+
+        <section class="player" data-seat="北">
+            <h2>北家</h2>
+
+            <div class="condition">
+                <span>点差</span>
+                <span data-field="diff">-</span>
+            </div>
+
+            <div class="condition">
+                <span>自摸</span>
+                <span data-field="tsumo">-</span>
+            </div>
+
+            <div class="condition">
+                <span>直撃</span>
+                <span data-field="ron">-</span>
+            </div>
+        </section>
+    </main>
+<script src="script.js"></script>
+</body>
+</html>
