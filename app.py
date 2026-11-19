@@ -15,15 +15,17 @@ state_lock = Lock()
 
 # 現在表示しているデータ
 current_display_data = {
-    "round": "東2局",
-    "counters": 1,
-    "deposit": 2,
-    "status": "ready",
+    "round": "確認中",
+    "counters": 0,
+    "deposit": 0,
+    "status": "loading",
     "players": {
-        "東": {"diff": 5200, "tsumo": "700オール", "ron": "1500"},
-        "南": {"diff": 0, "tsumo": "-", "ron": "-"},
-        "西": {"diff": 4600, "tsumo": "500-1000", "ron": "1000"},
-        "北": {"diff": 4600, "tsumo": "500-1000", "ron": "1000"},
+        seat: {
+            "diff": 0,
+            "tsumo": "-",
+            "ron": "-",
+        }
+        for seat in ("東", "南", "西", "北")
     },
 }
 

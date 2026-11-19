@@ -35,3 +35,20 @@ def create_display_data(confirmed_state, top_conditions):
         "status": "ready",
         "players": players,
     }
+
+
+def create_loading_display_data():
+    return {
+        "round": "確認中",
+        "counters": 0,
+        "deposit": 0,
+        "status": "loading",
+        "players": {
+            seat: {
+                "diff": 0,
+                "tsumo": "-",
+                "ron": "-",
+            }
+            for seat in ("東", "南", "西", "北")
+        },
+    }

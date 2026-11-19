@@ -3,7 +3,9 @@ from search_conditions import search_conditions
 from conditions import get_top_conditions
 
 from game_session import get_confirmed_state, monitor_round
-from display_formatter import create_display_data
+from display_formatter import create_display_data, create_loading_display_data
+
+from api_client import send_display_data
 
 
 def calculate_conditions(confirmed_state, score_tables):
@@ -39,10 +41,20 @@ def main():
             top_conditions,
         )
 
+        # Flaskへ送信
+        if send_display_data(display_data):
+            print("表示データをFlaskへ送信しました")
+
         print(display_data)
 
         # 次局まで監視
-        monitor_round(confirmed_state)
+        monitor_round(confirmed_state, display_data)
+
+        # 新しい局を検出したのでloadingに変更
+        loading_data = create_loading_display_data()
+
+        if send_display_data(loading_data):
+            print("ステータスをloadingに変更しました")
 
 
 if __name__ == "__main__":

@@ -14,6 +14,7 @@ function fetchState() {
 
             // プレイヤー情報
             const seats = ["東", "南", "西", "北"];
+            const isReady = data.status === "ready";
 
             seats.forEach(seat => {
                 const player = data.players[seat];
@@ -23,13 +24,13 @@ function fetchState() {
                 );
 
                 section.querySelector('[data-field="diff"]').textContent =
-                    player.diff.toLocaleString("ja-JP");
+                    isReady ? player.diff.toLocaleString("ja-JP") : "-";
 
                 section.querySelector('[data-field="tsumo"]').textContent =
-                    player.tsumo;
+                    isReady ? player.tsumo : "-";
 
                 section.querySelector('[data-field="ron"]').textContent =
-                    player.ron;
+                    isReady ? player.ron : "-";
             });
 
             // ステータス表示
@@ -38,6 +39,10 @@ function fetchState() {
                 loading: "新しい局を確認中...",
                 error: "ゲーム情報を確認できません",
             };
+
+            const roundMeta = document.getElementById("round-meta");
+
+            roundMeta.hidden = !isReady;
 
             const statusElement = document.getElementById("status");
 

@@ -1,4 +1,4 @@
-from display_formatter import create_display_data
+from display_formatter import create_display_data, create_loading_display_data
 
 
 def test_create_display_data():
@@ -133,3 +133,19 @@ def test_conflicting_ron_conditions():
 
     with pytest.raises(ValueError):
         create_display_data(confirmed_state, top_conditions)
+
+
+def test_create_loading_display_data():
+    result = create_loading_display_data()
+
+    assert result["round"] == "確認中"
+    assert result["status"] == "loading"
+    assert result["counters"] == 0
+    assert result["deposit"] == 0
+
+    for seat in ("東", "南", "西", "北"):
+        assert result["players"][seat] == {
+            "diff": 0,
+            "tsumo": "-",
+            "ron": "-",
+        }
