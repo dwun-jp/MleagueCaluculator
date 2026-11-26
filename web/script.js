@@ -64,6 +64,27 @@ function fetchState() {
         });
 }
 
+const fullscreenButton =
+    document.getElementById("fullscreen-button");
+
+fullscreenButton.addEventListener("click", async () => {
+    try {
+        if (document.fullscreenElement) {
+            await document.exitFullscreen();
+        } else {
+            await document.documentElement.requestFullscreen();
+        }
+    } catch (error) {
+        console.error("全画面表示エラー:", error);
+        alert("全画面表示に切り替えられませんでした");
+    }
+});
+
+document.addEventListener("fullscreenchange", () => {
+    fullscreenButton.textContent =
+        document.fullscreenElement ? "解除" : "全画面";
+});
+
 // ページを開いた直後に実行
 fetchState();
 
