@@ -216,3 +216,240 @@ def test_exclude_tied_top_players():
     }
 
     assert ron_discarders == {"東", "南"}
+
+
+from search_conditions import (
+    search_non_dealer_tsumo,
+    search_non_dealer_ron,
+    search_dealer_tsumo,
+    search_dealer_ron,
+)
+
+from ranking import get_ranking, get_places
+
+
+def test_non_dealer_tsumo_with_south_dealer():
+    scores = {
+        "東": 25000,
+        "南": 23000,
+        "西": 30000,
+        "北": 22000,
+    }
+
+    before_places = get_places(get_ranking(scores))
+
+    score_table = pd.DataFrame(
+        [
+            {
+                "non_dealer_pay": 1000,
+                "dealer_pay": 2000,
+                "label": "1000-2000",
+            }
+        ]
+    )
+
+    results = search_non_dealer_tsumo(
+        scores,
+        before_places,
+        top_players=["西"],
+        score_table=score_table,
+        counters=0,
+        deposit=0,
+        dealer="南",
+    )
+
+    assert len(results) == 2
+
+    assert {result["winner"] for result in results} == {
+        "東",
+        "北",
+    }
+
+    east_result = next(result for result in results if result["winner"] == "東")
+
+    assert east_result["after_places"] == [
+        (1, "東", 29000),
+        (1, "西", 29000),
+        (3, "南", 21000),
+        (3, "北", 21000),
+    ]
+
+
+def test_non_dealer_ron_with_south_dealer():
+    scores = {
+        "東": 25000,
+        "南": 23000,
+        "西": 30000,
+        "北": 22000,
+    }
+
+    before_places = get_places(get_ranking(scores))
+
+    score_table = pd.DataFrame(
+        [
+            {
+                "point": 5200,
+                "label": "5200",
+            }
+        ]
+    )
+
+    results = search_non_dealer_ron(
+        scores,
+        before_places,
+        top_players=["西"],
+        score_table=score_table,
+        counters=0,
+        deposit=0,
+        dealer="南",
+    )
+
+    # 親の南家とトップの西家は探索対象外
+    assert len(results) == 2
+
+    assert {result["winner"] for result in results} == {
+        "東",
+        "北",
+    }
+
+    # 東家が西家から5200点ロン
+    east_result = next(result for result in results if result["winner"] == "東")
+
+    assert east_result["discarder"] == "西"
+    assert east_result["label"] == "5200"
+
+    assert east_result["after_places"] == [
+        (1, "東", 30200),
+        (2, "西", 24800),
+        (3, "南", 23000),
+        (4, "北", 22000),
+    ]
+
+
+def test_dealer_tsumo_with_south_dealer():
+    scores = {
+        "東": 25000,
+        "南": 23000,
+        "西": 30000,
+        "北": 22000,
+    }
+
+    before_places = get_places(get_ranking(scores))
+
+    score_table = pd.DataFrame(
+        [
+            {
+                "pay": 2000,
+                "label": "2000オール",
+            }
+        ]
+    )
+
+    results = search_dealer_tsumo(
+        scores,
+        before_places,
+        top_players=["西"],
+        score_table=score_table,
+        counters=0,
+        deposit=0,
+        dealer="南",
+    )
+
+    assert len(results) == 1
+
+    result = results[0]
+
+    assert result["winner"] == "南"
+    assert result["method"] == "tsumo"
+    assert result["discarder"] is None
+    assert result["label"] == "2000オール"
+
+    assert result["after_places"] == [
+        (1, "南", 29000),
+        (2, "西", 28000),
+        (3, "東", 23000),
+        (4, "北", 20000),
+    ]
+
+
+def test_dealer_ron_with_south_dealer():
+    scores = {
+        "東": 25000,
+        "南": 23000,
+        "西": 30000,
+        "北": 22000,
+    }
+
+    before_places = get_places(get_ranking(scores))
+
+    score_table = pd.DataFrame(
+        [
+            {
+                "point": 12000,
+                "label": "満貫",
+            }
+        ]
+    )
+
+    results = search_dealer_ron(
+        scores,
+        before_places,
+        top_players=["西"],
+        score_table=score_table,
+        counters=0,
+        deposit=0,
+        dealer="南",
+    )
+
+    assert len(results) == 1
+
+    result = results[0]
+
+    assert result["winner"] == "南"
+    assert result["method"] == "ron"
+    assert result["discarder"] == "西"
+    assert result["label"] == "満貫"
+
+    assert result["after_places"] == [
+        (1, "南", 35000),
+        (2, "東", 25000),
+        (3, "北", 22000),
+        (4, "西", 18000),
+    ]
+
+
+from main import calculate_conditions
+
+"""
+def test_calculate_conditions_south_dealer():
+    confirmed_state = {
+        "round": "東2局",
+        "counters": 0,
+        "deposit": 0,
+        "scores": {
+            "東": 25000,
+            "南": 23000,
+            "西": 30000,
+            "北": 22000,
+        },
+    }
+
+    score_tables = make_score_tables()
+
+    results = calculate_conditions(
+        confirmed_state,
+        score_tables,
+    )
+
+    print("戻り値の型:", type(results))
+    print("結果の件数:", len(results))
+
+    for result in results:
+        print(
+            result["winner"],
+            result["method"],
+            result["discarder"],
+            result["label"],
+        )
+        print("和了後:", result["after_places"])
+"""

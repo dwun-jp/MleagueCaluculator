@@ -1,6 +1,7 @@
 from csv_loader import load_score_tables
 from search_conditions import search_conditions
 from conditions import get_top_conditions
+from mahjong_rules import get_dealer
 
 from game_session import get_confirmed_state, monitor_round
 from display_formatter import create_display_data, create_loading_display_data
@@ -9,12 +10,14 @@ from api_client import send_display_data
 
 
 def calculate_conditions(confirmed_state, score_tables):
+    dealer = get_dealer(confirmed_state["round"])
 
     results = search_conditions(
         confirmed_state["scores"],
         score_tables,
         counters=confirmed_state["counters"],
         deposit=confirmed_state["deposit"],
+        dealer=dealer,
     )
 
     return get_top_conditions(results)
