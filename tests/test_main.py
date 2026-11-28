@@ -187,3 +187,53 @@ def test_calculate_conditions_non_dealer_tsumo():
         (3, "西", 22000),
         (4, "北", 20000),
     ]
+
+
+from csv_loader import load_score_tables
+
+
+def test_calculate_conditions_integration_test():
+    confirmed_state = {
+        "round": "南4局",
+        "counters": 0,
+        "deposit": 0,
+        "scores": {
+            "東": 25000,
+            "南": 30000,
+            "西": 23000,
+            "北": 22000,
+        },
+    }
+
+    results = calculate_conditions(
+        confirmed_state,
+        load_score_tables(),
+    )
+
+    dealer_tsumo = next(
+        result
+        for result in results
+        if result["winner"] == "北" and result["method"] == "tsumo"
+    )
+
+    assert dealer_tsumo["label"] == "2000オール"
+    assert dealer_tsumo["after_places"] == [
+        (1, "南", 28000),
+        (1, "北", 28000),
+        (3, "東", 23000),
+        (4, "西", 21000),
+    ]
+
+    east_ron = next(
+        result
+        for result in results
+        if result["winner"] == "東" and result["method"] == "ron"
+    )
+
+    assert east_ron["label"] == "2600"
+    assert east_ron["after_places"] == [
+        (1, "東", 27600),
+        (2, "南", 27400),
+        (3, "西", 23000),
+        (4, "北", 22000),
+    ]
